@@ -2,23 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public  static class MeshGenerator
-{
-    public static MeshData generateTerrianMesh(float[,] heightMap, float heightMulitplier, AnimationCurve heightCurve, int levelofDetail){
+public  static class MeshGenerator {
+    public static MeshData generateTerrianMesh(float[,] heightMap, float heightMulitplier, AnimationCurve _heightCurve, int levelofDetail){
+        AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
+
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
         float TopLeftx = (width - 1) / -2f;
         float TopLeftz = (height - 1) / 2f;
+
         int meshsimplicationIncreament = (levelofDetail == 0) ? 1:levelofDetail * 2;
         int positionsPerLine = (width - 1) / meshsimplicationIncreament + 1;
 
         MeshData meshdata = new MeshData(positionsPerLine, positionsPerLine);
         int positionIndex = 0;
 
-        for(int y = 0; y < height; y += meshsimplicationIncreament)
-        {
-            for (int x = 0; x < width; x += meshsimplicationIncreament)
-            {
+        for(int y = 0; y < height; y += meshsimplicationIncreament) {
+            for (int x = 0; x < width; x += meshsimplicationIncreament) {
 
                 meshdata.position[positionIndex] = new Vector3(TopLeftx +x, heightCurve.Evaluate( heightMap[x, y]) * heightMulitplier, TopLeftz -y);
                 meshdata.UVs[positionIndex] = new Vector2(x/(float)width, y/(float)height);
