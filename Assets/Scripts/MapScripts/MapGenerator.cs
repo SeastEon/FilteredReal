@@ -3,23 +3,24 @@ using System.Collections.Generic;
 using System;
 using System.Threading;
 using UnityEngine;
-using static Noise;
-using static UnityEngine.Mesh;
 
 public class MapGenerator : MonoBehaviour {
-
-    public enum DrawMode{NoiseMap, ColorMap, Mesh }
+    public enum DrawMode{NoiseMap, ColorMap, Mesh, FallOffMap }
     public DrawMode drawMode;
-    public NormalizeMode normalizeMode;
-    public const int MapChuckSize = 241;
+
+    public Noise.NormalizeMode normalizeMode;
+    public const int MapChuckSize = 239;
     [Range(0,6)]
-    public int LevelOfDetail;
+    public int EditorLevelOfDetail;
 
     public float noiseScale;
 
     public bool AutoUpdate;
 
+    public bool UseFallOffMap;
+
     public int seed;
+
     public int octaves;
     [Range (0, 1)]
     public float persistance;
@@ -30,47 +31,54 @@ public class MapGenerator : MonoBehaviour {
     public float MeshHeightMulitplier;
     public AnimationCurve MeshHeightCurve;
 
+    float[,] FallOffMap;
     public TerrainType[] regions;
 
     Queue<MapThreadInfo<Mapdata>> mapdataThreadInfoQueue = new Queue<MapThreadInfo<Mapdata>>();
     Queue<MapThreadInfo<Meshdata>> meshdataThreadInfoQueue = new Queue<MapThreadInfo<Meshdata>>();
 
+    private void Awake()
+    {
+        FallOffMap = FallOffGenerator.GeneratefallOffMap(MapChuckSize);
+    }
 
     public void DrawmapInEditor() {
-        Mapdata mapdata = GeneratateMapData();
+        Mapdata mapdata = GeneratateMapData(Vector2.zero);
         MapDisplay display = FindAnyObjectByType<MapDisplay>();
         if (drawMode == DrawMode.NoiseMap){
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapdata.heightMap));
-        }
-        else if (drawMode == DrawMode.ColorMap){
+        } else if (drawMode == DrawMode.ColorMap){
             display.DrawTexture(TextureGenerator.TextureFromColourMap(mapdata.colorMap, MapChuckSize, MapChuckSize));
-        }
-        else if (drawMode == DrawMode.Mesh)  {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapdata.heightMap, MeshHeightMulitplier, MeshHeightCurve, LevelOfDetail), TextureGenerator.TextureFromColourMap(mapdata.colorMap, MapChuckSize, MapChuckSize));
+        } else if (drawMode == DrawMode.Mesh)  {
+            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapdata.heightMap, MeshHeightMulitplier, MeshHeightCurve, EditorLevelOfDetail), TextureGenerator.TextureFromColourMap(mapdata.colorMap, MapChuckSize, MapChuckSize));
+        } else if (drawMode == DrawMode.FallOffMap)   {
+            display.DrawTexture(TextureGenerator.TextureFromHeightMap(FallOffGenerator.GeneratefallOffMap(MapChuckSize)));
         }
     }
 
-    public void RequestMapdata(Action<Mapdata> callback) {
-        ThreadStart threadstart = delegate { MapdataThread(callback); };
+    public void RequestMapdata(Vector2 centre, Action<Mapdata> callback) {
+        ThreadStart threadstart = delegate { MapdataThread(centre, callback); };
         new Thread(threadstart).Start();
     }
 
-    public void RequestMeshData(Mapdata mapData, Action<Meshdata> callback) {
-        ThreadStart threadStart = delegate {MeshdataThread(mapData, callback); };
-        new Thread(threadStart).Start();
-    }
-    void MeshdataThread(Mapdata mapdata, Action<Meshdata> callback) {
-        Meshdata meshdata = MeshGenerator.GenerateTerrainMesh(mapdata.heightMap, MeshHeightMulitplier, MeshHeightCurve, LevelOfDetail);
-        lock (meshdataThreadInfoQueue)  {
-            meshdataThreadInfoQueue.Enqueue(new MapThreadInfo<Meshdata>(callback, meshdata));
-        }
-    }
-    void MapdataThread(Action<Mapdata> callback) {
-        Mapdata mapdata = GeneratateMapData();
+    void MapdataThread(Vector2 centre, Action<Mapdata> callback){
+        Mapdata mapdata = GeneratateMapData(centre);
         lock (mapdataThreadInfoQueue) {
             mapdataThreadInfoQueue.Enqueue(new MapThreadInfo<Mapdata>(callback, mapdata));
         }
     }
+
+    public void RequestMeshData(Mapdata mapData,int lod, Action<Meshdata> callback) {
+        ThreadStart threadStart = delegate {MeshdataThread(mapData,lod, callback); };
+        new Thread(threadStart).Start();
+    }
+    void MeshdataThread(Mapdata mapdata, int lod, Action<Meshdata> callback) {
+        Meshdata meshdata = MeshGenerator.GenerateTerrainMesh(mapdata.heightMap, MeshHeightMulitplier, MeshHeightCurve, lod);
+        lock (meshdataThreadInfoQueue)  {
+            meshdataThreadInfoQueue.Enqueue(new MapThreadInfo<Meshdata>(callback, meshdata));
+        }
+    }
+
 
     private void Update() {
         if(mapdataThreadInfoQueue.Count > 0) {
@@ -88,20 +96,18 @@ public class MapGenerator : MonoBehaviour {
         }
     }
 
-    public Mapdata GeneratateMapData() {
-        float[,] noiseMap = Noise.GenerateNoiseMap(MapChuckSize, MapChuckSize, seed, noiseScale, octaves, persistance, lacunarity, offset, normalizeMode);
-
+    public Mapdata GeneratateMapData(Vector2 centre) {
+        float[,] noiseMap = Noise.GenerateNoiseMap(MapChuckSize+2 , MapChuckSize +2 , seed, noiseScale, octaves, persistance, lacunarity, centre + offset, normalizeMode);
         Color[] colorMap = new Color[MapChuckSize * MapChuckSize];
 
         for (int y = 0;  y < MapChuckSize; y++) { 
             for(int x = 0; x < MapChuckSize; x++) {
+                if (UseFallOffMap) { noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - FallOffMap[x, y]); }
                 float CurrHeight = noiseMap[x, y];
-
                 for(int i = 0; i < regions.Length; i++) {
-                    if(CurrHeight <= regions[i].height) {
+                    if(CurrHeight >= regions[i].height) {
                         colorMap[y * MapChuckSize + x] = regions[i].color;
-                        break;
-                    }
+                    } else { break; }
                 }
             }
         }
@@ -112,6 +118,7 @@ public class MapGenerator : MonoBehaviour {
     private void OnValidate() {
         if(lacunarity < 1){ lacunarity = 1; }
         if(octaves < 0) { octaves = 0;}
+        FallOffMap = FallOffGenerator.GeneratefallOffMap(MapChuckSize);
     }
 
     struct MapThreadInfo <T>{
