@@ -6,7 +6,15 @@ public class UpdatableData : ScriptableObject {
     public event System.Action OnValuesupdated;
     public bool autoUpdate;
 
-    protected virtual void OnValidate() {UnityEditor.EditorApplication.delayCall += _OnValidate;}
-    private void _OnValidate(){ if (autoUpdate) { NotifyOfUpdatedValues(); }}
-    public void NotifyOfUpdatedValues() { if(OnValuesupdated != null){OnValuesupdated();} }
+#if UNITY_EDITOR
+
+    protected virtual void OnValidate() {
+        if (autoUpdate) { UnityEditor.EditorApplication.update += NotifyOfUpdatedValues; }
+    }
+    public void NotifyOfUpdatedValues() {
+        UnityEditor.EditorApplication.update -= NotifyOfUpdatedValues;
+        if (OnValuesupdated != null){ OnValuesupdated(); } 
+    }
+
+#endif
 }

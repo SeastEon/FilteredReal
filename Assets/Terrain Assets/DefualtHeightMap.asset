@@ -9,44 +9,50 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79ec0bc2cd498f74dbfe233ee9b8d5aa, type: 3}
-  m_Name: DefualtTerrarian
+  m_Script: {fileID: 11500000, guid: 4c2a0329275dddd479ce5ffc2d1d8cc7, type: 3}
+  m_Name: DefualtHeightMap
   m_EditorClassIdentifier: 
   autoUpdate: 1
-  Uniformscale: 5
-  UseFallOffMap: 1
-  UseFlatShading: 0
-  MeshHeightMulitplier: 40
-  MeshHeightCurve:
+  noiseSettings:
+    normalizeMode: 1
+    scale: 82.1
+    seed: 0
+    octaves: 3
+    persistance: 0.429
+    lacunarity: 2.09
+    offset: {x: 0, y: 0}
+  UseFallOffMap: 0
+  HeightMult: 54.3
+  HeightCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: -0.09928484
+      outSlope: -0.09928484
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.07126437
     - serializedVersion: 3
-      time: 0.2472197
-      value: -0.0023994297
-      inSlope: -0.050541364
-      outSlope: -0.050541364
+      time: 0.47488266
+      value: 0.3988829
+      inSlope: -0.009398743
+      outSlope: -0.009398743
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.23284766
-      outWeight: 0.17514727
+      inWeight: 0.33333334
+      outWeight: 0.25311738
     - serializedVersion: 3
-      time: 0.5682558
-      value: 0.17640823
-      inSlope: 1.2098618
-      outSlope: 1.2098618
+      time: 0.7858691
+      value: 0.6520722
+      inSlope: 0.44770357
+      outSlope: 0.44770357
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.13793102
-      outWeight: 0.08993492
+      inWeight: 0.33333334
+      outWeight: 0.36598548
     - serializedVersion: 3
       time: 1
       value: 1
