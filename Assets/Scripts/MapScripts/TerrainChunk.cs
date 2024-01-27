@@ -6,9 +6,12 @@ public class TerrainChunk {
     public event System.Action<TerrainChunk, bool> OnVisibleChanged;
     public Vector2 coord;
 
-    GameObject meshObject;
+    // holds the mesh information
+    public GameObject meshObject;
     Vector2 Samplecentre;
     Bounds bounds;
+
+    WaterPlane water;
 
     MeshRenderer meshRenderer;
     MeshFilter meshFilter;
@@ -28,7 +31,7 @@ public class TerrainChunk {
     MeshSettings meshSettings;
     Transform viewer;
 
-    public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform Viewer, Material mat) {
+    public TerrainChunk(Vector2 coord, HeightMapSettings heightMapSettings, MeshSettings meshSettings, LODInfo[] detailLevels, int colliderLODIndex, Transform parent, Transform Viewer, Material mat, Material waterMaterial) {
         this.coord = coord;
         this.detailLevels = detailLevels;
         this.colliderLODIndex = colliderLODIndex;
@@ -40,12 +43,14 @@ public class TerrainChunk {
         Vector2 position = coord * meshSettings.MeshWorldSize;
         bounds = new Bounds(position, Vector2.one * meshSettings.MeshWorldSize);
 
+        //assigns the terrains mesh object
         meshObject = new GameObject("Terrain Chunk");
         meshRenderer = meshObject.AddComponent<MeshRenderer>();
         meshFilter = meshObject.AddComponent<MeshFilter>();
         meshCollider = meshObject.AddComponent<MeshCollider>();
         meshRenderer.material = mat;
         meshObject.layer = 10;
+        water = new WaterPlane(this, (meshSettings.MeshWorldSize * meshSettings.MeshScale), position, waterMaterial);
 
         meshObject.transform.position = new Vector3(position.x, 0, position.y);
         meshObject.transform.parent = parent;
@@ -123,12 +128,11 @@ public class TerrainChunk {
         }
     }
 
-    public void SetVisble(bool visble) { meshObject.SetActive(visble); }
+    public void SetVisble(bool visble) { meshObject.SetActive(visble);  }
     public bool IsVisible() { return meshObject.activeSelf; }
 }
 
-class LODMesh
-{
+class LODMesh {
     public Mesh mesh;
     public bool hasRequestedmesh;
     public bool Hasmesh;

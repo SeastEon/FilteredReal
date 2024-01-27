@@ -17,6 +17,7 @@ public class TerrainGenerator : MonoBehaviour{
 
     public Transform viewer;
     public Material mapmaterial;
+    public Material watermaterial;
 
     Vector2 viewerPosition;
     Vector2 viewerPoistionOld;
@@ -34,6 +35,7 @@ public class TerrainGenerator : MonoBehaviour{
         float maxViewdst = detailLevels[detailLevels.Length - 1].visibleDsthreshold;
         meshWorldSize = meshSettings.MeshWorldSize;
         chunkVisible = Mathf.RoundToInt(maxViewdst / meshWorldSize);
+        
 
         UpdateVisibleChunks();
     }
@@ -70,7 +72,7 @@ public class TerrainGenerator : MonoBehaviour{
                     if (TerrarinChunkDict.ContainsKey(viewdChunkCoord)) {
                         TerrarinChunkDict[viewdChunkCoord].UpdateTerrainChunk(); }
                     else {
-                        TerrainChunk newChunk = new TerrainChunk(viewdChunkCoord, heightMapSettings, meshSettings, detailLevels, colliderLODIndex, transform, viewer, mapmaterial);
+                        TerrainChunk newChunk = new TerrainChunk(viewdChunkCoord, heightMapSettings, meshSettings, detailLevels, colliderLODIndex, transform, viewer, mapmaterial, watermaterial);
                         TerrarinChunkDict.Add(viewdChunkCoord, newChunk);
                         newChunk.OnVisibleChanged += OnTerrainChunkVisibiltyChanged;
                         newChunk.Load();
@@ -88,8 +90,7 @@ public class TerrainGenerator : MonoBehaviour{
 
 
 [System.Serializable]
-public struct LODInfo
-{
+public struct LODInfo {
     [Range(0, MeshSettings.numsupportedLOD - 1)]
     public int lod;
     public float visibleDsthreshold;

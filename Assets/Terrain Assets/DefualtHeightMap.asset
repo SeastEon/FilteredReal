@@ -15,10 +15,10 @@ MonoBehaviour:
   autoUpdate: 1
   noiseSettings:
     normalizeMode: 1
-    scale: 82.1
+    scale: 349.03
     seed: 0
     octaves: 3
-    persistance: 0.429
+    persistance: 0.449
     lacunarity: 2.09
     offset: {x: 0, y: 0}
   UseFallOffMap: 0
@@ -65,3 +65,4 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  waterLevel: 0

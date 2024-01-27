@@ -10,14 +10,13 @@ public class HeightMapSettings : UpdatableData {
     public bool UseFallOffMap;
     public float HeightMult;
     public AnimationCurve HeightCurve;
+    public float waterLevel;
 
-    public float minHeight
-    {
+    public float minHeight {
         get { return HeightMult * HeightCurve.Evaluate(0); }
     }
 
-    public float maxHeight
-    {
+    public float maxHeight {
         get { return  HeightMult * HeightCurve.Evaluate(1); }
     }
 

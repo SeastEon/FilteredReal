@@ -26,15 +26,9 @@ public class MapPreview : MonoBehaviour {
         textureData.UpdateMeshHeights(TerrainMaterial, heightmapSettings.minHeight, heightmapSettings.maxHeight);
         HeightMap heightMap = HeightMapGenerator.GenerateHeightMap(meshSettings.NumVertsPerLine, meshSettings.NumVertsPerLine, heightmapSettings, Vector2.zero);
         
-        if (drawMode == DrawMode.NoiseMap) {
-            DrawTexture(TextureGenerator.TextureFromHeightMap(heightMap));
-        }
-        else if (drawMode == DrawMode.Mesh) {
-            DrawMesh(MeshGenerator.GenerateTerrainMesh(heightMap.Values, EditorLevelOfDetail, meshSettings));
-        }
-        else if (drawMode == DrawMode.FallOffMap) {
-            DrawTexture(TextureGenerator.TextureFromHeightMap( new HeightMap( FallOffGenerator.GeneratefallOffMap(meshSettings.NumVertsPerLine), 0, 1)));
-        }
+        if (drawMode == DrawMode.NoiseMap) { DrawTexture(TextureGenerator.TextureFromHeightMap(heightMap)); }
+        else if (drawMode == DrawMode.Mesh) { DrawMesh(MeshGenerator.GenerateTerrainMesh(heightMap.Values, EditorLevelOfDetail, meshSettings)); }
+        else if (drawMode == DrawMode.FallOffMap) { DrawTexture(TextureGenerator.TextureFromHeightMap( new HeightMap( FallOffGenerator.GeneratefallOffMap(meshSettings.NumVertsPerLine), 0, 1)));}
     }
 
     private void OnValidate()
